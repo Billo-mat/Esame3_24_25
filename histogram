@@ -16,4 +16,4 @@ plt.ylabel('Numero di campioni (Frequenza)', fontsize=12)
 
 # 4. Pulizia del grafico e salvataggio
 plt.grid(axis='y', alpha=0.3)
-plt.show('istogramma_NR1_N.png')
+plt.show()
