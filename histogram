@@ -1,0 +1,19 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Carichiamo i dati (mantenendo l'indice MouseID come nell'esercizio precedente)
+df = pd.read_csv('mice.csv', index_col='MouseID')
+
+# 2. Creazione dell'istogramma
+# Usiamo .dropna() per evitare errori se ci sono valori mancanti nella colonna
+plt.figure(figsize=(10, 6))
+df['NR1_N'].dropna().hist(bins=30, color='skyblue', edgecolor='black')
+
+# 3. Aggiunta di titoli e nomi degli assi
+plt.title('Distribuzione dei valori della proteina NR1_N', fontsize=15)
+plt.xlabel('Livello di espressione (NR1_N)', fontsize=12)
+plt.ylabel('Numero di campioni (Frequenza)', fontsize=12)
+
+# 4. Pulizia del grafico e salvataggio
+plt.grid(axis='y', alpha=0.3)
+plt.show('istogramma_NR1_N.png')
