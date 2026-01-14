@@ -1,0 +1,31 @@
+# Creiamo una figura con 1 riga e 2 colonne
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+# --- COLONNA 1: Contrasto per Genotipo ---
+genotypes = df['Genotype'].unique()
+for g in genotypes:
+    # Filtriamo i dati per il genotipo corrente e rimuoviamo i valori mancanti
+    subset = df[df['Genotype'] == g]['NR1_N'].dropna()
+    axes[0].hist(subset, bins=30, density=True, alpha=0.5, label=g)
+
+axes[0].set_title('Confronto Genotipi (Control vs Ts65Dn)')
+axes[0].set_xlabel('Livello di Espressione')
+axes[0].set_ylabel('Densità')
+axes[0].legend()
+
+# --- COLONNA 2: Contrasto per Trattamento ---
+treatments = df['Treatment'].unique()
+for t in treatments:
+    # Filtriamo i dati per il trattamento corrente e rimuoviamo i valori mancanti
+    subset = df[df['Treatment'] == t]['NR1_N'].dropna()
+    axes[1].hist(subset, bins=30, density=True, alpha=0.5, label=t)
+
+axes[1].set_title('Confronto Trattamenti (Memantine vs Saline)')
+axes[1].set_xlabel('Livello di Espressione')
+axes[1].set_ylabel('Densità')
+axes[1].legend()
+
+# Ottimizziamo lo spazio tra i grafici e salviamo
+plt.tight_layout()
+plt.show()
+
