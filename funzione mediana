@@ -1,0 +1,34 @@
+def median_below_threshold(data: List[float], threshold: float) -> Optional[float]:
+    """
+    Restituisce il mediano dei valori in 'data' che sono minori di 'threshold'.
+    
+    Esempi per doctest:
+    >>> median_below_threshold([2., 3., 1., 6., -1., 0.3], 5.)
+    1.0
+    >>> median_below_threshold([2., 3., 1., 6., -1., 0.4, 0.], 5.)
+    0.7
+    """
+    
+    # 1. Filtriamo i valori minori della soglia e ordiniamo la lista
+    filtered = sorted([x for x in data if x < threshold])
+    
+    n = len(filtered)
+    
+    # Gestione caso lista vuota (se nessun elemento è sotto la soglia)
+    if n == 0:
+        return None
+    
+    mid = n // 2
+    
+    # 2. Calcolo del mediano
+    if n % 2 == 1:
+        # Se il numero di elementi è dispari, prendiamo quello centrale
+        return filtered[mid]
+    else:
+        # Se è pari, facciamo la media dei due valori centrali
+        return (filtered[mid - 1] + filtered[mid]) / 2.0
+
+# Per eseguire i test automaticamente
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
