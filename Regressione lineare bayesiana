@@ -1,0 +1,27 @@
+# Teniamo solo le righe dove entrambi i valori sono presenti (dropna)
+data_clean = df[['NR1_N', 'NR2A_N']].dropna()
+
+x = data_clean['NR2A_N'].values
+y = data_clean['NR1_N'].values
+
+# 2. Definizione del modello Bayesiano con PyMC
+with pm.Model() as model:
+    # Priors: quello che ipotizziamo prima di vedere i dati
+    alpha = pm.Normal('alpha', mu=0, sigma=2)
+    beta = pm.Normal('beta', mu=0, sigma=2)
+    sigma = pm.Exponential('sigma', lam=1)
+    
+    # Il modello lineare (la formula della retta)
+    mu = alpha + beta * x
+    
+    # Likelihood: come i dati reali "NR1_N" (y) si distribuiscono attorno alla retta
+    likelihood = pm.Normal('y_obs', mu=mu, sigma=sigma, observed=y)
+    
+    # 3. Campionamento (Inference)
+    # PyMC esplora migliaia di combinazioni possibili per trovare quelle più probabili
+    trace = pm.sample(draws=1000, tune=1000, return_inferencedata=True)
+
+# 4. Plot delle distribuzioni Posteriori
+# Questo grafico mostra i valori più probabili per alpha, beta e sigma dopo aver visto i dati
+az.plot_posterior(trace)
+plt.savefig('posterior_distributions.png')
