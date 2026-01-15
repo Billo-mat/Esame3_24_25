@@ -1,0 +1,24 @@
+# 1. Prepariamo i dati
+# Estraiamo la colonna, rimuoviamo i valori mancanti (NaN) 
+# e convertiamo in una lista standard di Python (List[float])
+nr1_list = df['NR1_N'].dropna().tolist()
+
+# 2. Applichiamo la funzione dell'Esercizio 5
+# Usiamo float per la soglia (2.0) come richiesto dai type hints
+soglia = 2.0
+risultato_custom = median_below_threshold(nr1_list, soglia)
+
+# 3. Calcoliamo lo stesso valore con i metodi di Pandas
+# Filtriamo la colonna per valori < 2 e usiamo il metodo .median()
+risultato_pandas = df[df['NR1_N'] < soglia]['NR1_N'].median()
+
+# 4. Confronto
+print(f"Risultato funzione custom: {risultato_custom}")
+print(f"Risultato metodo Pandas:   {risultato_pandas}")
+print(f"I risultati coincidono?    {risultato_custom == risultato_pandas}")
+
+#se il confronto fosse richiesto tra il comando semplice della mediana di pandas
+risultato_pandas = df['NR1_N'].median()
+print(f"Risultato funzione custom: {risultato_custom}")
+print(f"Risultato metodo Pandas:   {risultato_pandas}")
+print(f"I risultati coincidono?    {risultato_custom == risultato_pandas}")
