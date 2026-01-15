@@ -1,0 +1,10 @@
+# Definiamo i dizionari di mappatura per i codici
+genotype_map = {'Control': 'c', 'Ts65Dn': 't'}
+treatment_map = {'Memantine': 'm', 'Saline': 's'}
+
+# Creiamo la nuova colonna concatenando le stringhe
+df['classification'] = (
+    df['Genotype'].map(genotype_map) + '-' + 
+    df['Behavior'] + '-' + 
+    df['Treatment'].map(treatment_map)
+)
