@@ -1,0 +1,196 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from typing import List, Optional
+import pymc as pm
+import arviz as az
+
+# Load the data using MouseID as the index
+df = pd.read_csv('mice.csv', index_col='MouseID')
+
+# Identify and print unique values for columns not ending with "_N"
+for column in df.columns:
+    if not column.endswith('_N'):
+        unique_values = df[column].unique()
+        print(f"{column}: {unique_values}")
+
+# 2. Creazione dell'istogramma
+# Usiamo .dropna() per evitare errori se ci sono valori mancanti nella colonna
+plt.figure(figsize=(10, 6))
+df['NR1_N'].dropna().hist(bins=30, color='skyblue', edgecolor='black')
+
+# 3. Aggiunta di titoli e nomi degli assi
+plt.title('Distribuzione dei valori della proteina NR1_N', fontsize=15)
+plt.xlabel('Livello di espressione (NR1_N)', fontsize=12)
+plt.ylabel('Numero di campioni (Frequenza)', fontsize=12)
+
+# 4. Pulizia del grafico e salvataggio
+plt.grid(axis='y', alpha=0.3)
+plt.show()
+
+# Creiamo una figura con 1 riga e 2 colonne
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+# --- COLONNA 1: Contrasto per Genotipo ---
+genotypes = df['Genotype'].unique()
+for g in genotypes:
+    # Filtriamo i dati per il genotipo corrente e rimuoviamo i valori mancanti
+    subset = df[df['Genotype'] == g]['NR1_N'].dropna()
+    axes[0].hist(subset, bins=30, density=True, alpha=0.5, label=g)
+
+axes[0].set_title('Confronto Genotipi (Control vs Ts65Dn)')
+axes[0].set_xlabel('Livello di Espressione')
+axes[0].set_ylabel('Densità')
+axes[0].legend()
+
+# --- COLONNA 2: Contrasto per Trattamento ---
+treatments = df['Treatment'].unique()
+for t in treatments:
+    # Filtriamo i dati per il trattamento corrente e rimuoviamo i valori mancanti
+    subset = df[df['Treatment'] == t]['NR1_N'].dropna()
+    axes[1].hist(subset, bins=30, density=True, alpha=0.5, label=t)
+
+axes[1].set_title('Confronto Trattamenti (Memantine vs Saline)')
+axes[1].set_xlabel('Livello di Espressione')
+axes[1].set_ylabel('Densità')
+axes[1].legend()
+
+# Ottimizziamo lo spazio tra i grafici e salviamo
+plt.tight_layout()
+plt.show()
+
+# 2. Identificazione delle combinazioni
+genotypes = df['Genotype'].unique()  # ['Control', 'Ts65Dn']
+treatments = df['Treatment'].unique() # ['Memantine', 'Saline']
+
+# 3. Creazione della figura 2x2
+# sharex e sharey aiutano a mantenere la stessa scala per tutti i grafici
+fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharex=True, sharey=True)
+
+# 4. Ciclo per riempire i 4 subplot
+for i, genotype in enumerate(genotypes):
+    for j, treatment in enumerate(treatments):
+        # Filtriamo i dati per la combinazione corrente
+        subset = df[(df['Genotype'] == genotype) & (df['Treatment'] == treatment)]
+        
+        # Estraiamo le due proteine rimuovendo i valori nulli
+        data_nr1 = subset['NR1_N'].dropna()
+        data_nr2a = subset['NR2A_N'].dropna()
+        
+        # Plottiamo entrambi gli istogrammi nello stesso asse (axes[i, j])
+        axes[i, j].hist(data_nr1, bins=30, alpha=0.5, label='NR1_N', density=True, color='blue')
+        axes[i, j].hist(data_nr2a, bins=30, alpha=0.5, label='NR2A_N', density=True, color='orange')
+        
+        # Aggiungiamo titoli e legenda per ogni riquadro
+        axes[i, j].set_title(f"Gen: {genotype} | Tratt: {treatment}")
+        axes[i, j].legend()
+        
+        # Etichette solo per gli assi esterni per pulizia visiva
+        if i == 1: axes[i, j].set_xlabel('Livello di Espressione')
+        if j == 0: axes[i, j].set_ylabel('Densità')
+
+plt.tight_layout()
+plt.show()
+
+
+def median_below_threshold(data: List[float], threshold: float) -> Optional[float]:
+    """
+    Restituisce il mediano dei valori in 'data' che sono minori di 'threshold'.
+    
+    Esempi per doctest:
+    >>> median_below_threshold([2., 3., 1., 6., -1., 0.3], 5.)
+    1.0
+    >>> median_below_threshold([2., 3., 1., 6., -1., 0.4, 0.], 5.)
+    0.7
+    """
+    
+    # 1. Filtriamo i valori minori della soglia e ordiniamo la lista
+    filtered = sorted([x for x in data if x < threshold])
+    
+    n = len(filtered)
+    
+    # Gestione caso lista vuota (se nessun elemento è sotto la soglia)
+    if n == 0:
+        return None
+    
+    mid = n // 2
+    
+    # 2. Calcolo del mediano
+    if n % 2 == 1:
+        # Se il numero di elementi è dispari, prendiamo quello centrale
+        return filtered[mid]
+    else:
+        # Se è pari, facciamo la media dei due valori centrali
+        return (filtered[mid - 1] + filtered[mid]) / 2.0
+
+# Per eseguire i test automaticamente
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+
+# 1. Prepariamo i dati
+# Estraiamo la colonna, rimuoviamo i valori mancanti (NaN) 
+# e convertiamo in una lista standard di Python (List[float])
+nr1_list = df['NR1_N'].dropna().tolist()
+
+# 2. Applichiamo la funzione dell'Esercizio 5
+# Usiamo float per la soglia (2.0) come richiesto dai type hints
+soglia = 2.0
+risultato_custom = median_below_threshold(nr1_list, soglia)
+
+# 3. Calcoliamo lo stesso valore con i metodi di Pandas
+# Filtriamo la colonna per valori < 2 e usiamo il metodo .median()
+risultato_pandas = df[df['NR1_N'] < soglia]['NR1_N'].median()
+
+# 4. Confronto
+print(f"Risultato funzione custom: {risultato_custom}")
+print(f"Risultato metodo Pandas:   {risultato_pandas}")
+print(f"I risultati coincidono?    {risultato_custom == risultato_pandas}")
+
+#se il confronto fosse richiesto tra il comando semplice della mediana di pandas
+risultato_pandas = df['NR1_N'].median()
+print(f"Risultato funzione custom: {risultato_custom}")
+print(f"Risultato metodo Pandas:   {risultato_pandas}")
+print(f"I risultati coincidono?    {risultato_custom == risultato_pandas}")
+
+# Definiamo i dizionari di mappatura per i codici
+genotype_map = {'Control': 'c', 'Ts65Dn': 't'}
+treatment_map = {'Memantine': 'm', 'Saline': 's'}
+
+# Creiamo la nuova colonna concatenando le stringhe
+df['classification'] = (
+    df['Genotype'].map(genotype_map) + '-' + 
+    df['Behavior'] + '-' + 
+    df['Treatment'].map(treatment_map)
+)
+
+# Teniamo solo le righe dove entrambi i valori sono presenti (dropna)
+data_clean = df[['NR1_N', 'NR2A_N']].dropna()
+
+x = data_clean['NR2A_N'].values
+y = data_clean['NR1_N'].values
+
+# 2. Definizione del modello Bayesiano con PyMC
+with pm.Model() as model:
+    # Priors: quello che ipotizziamo prima di vedere i dati
+    alpha = pm.Normal('alpha', mu=0, sigma=2)
+    beta = pm.Normal('beta', mu=0, sigma=2)
+    sigma = pm.Exponential('sigma', lam=1)
+    
+    # Il modello lineare (la formula della retta)
+    mu = alpha + beta * x
+    
+    # Likelihood: come i dati reali "NR1_N" (y) si distribuiscono attorno alla retta
+    likelihood = pm.Normal('y_obs', mu=mu, sigma=sigma, observed=y)
+    
+    # 3. Campionamento (Inference)
+    # PyMC esplora migliaia di combinazioni possibili per trovare quelle più probabili
+    trace = pm.sample(draws=1000, tune=1000, return_inferencedata=True)
+
+# 4. Plot delle distribuzioni Posteriori
+# Questo grafico mostra i valori più probabili per alpha, beta e sigma dopo aver visto i dati
+az.plot_posterior(trace)
+plt.show()
+
+
+
+
