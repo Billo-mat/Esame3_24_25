@@ -1,0 +1,32 @@
+# 2. Identificazione delle combinazioni
+genotypes = df['Genotype'].unique()  # ['Control', 'Ts65Dn']
+treatments = df['Treatment'].unique() # ['Memantine', 'Saline']
+
+# 3. Creazione della figura 2x2
+# sharex e sharey aiutano a mantenere la stessa scala per tutti i grafici
+fig, axes = plt.subplots(2, 2, figsize=(14, 10), sharex=True, sharey=True)
+
+# 4. Ciclo per riempire i 4 subplot
+for i, genotype in enumerate(genotypes):
+    for j, treatment in enumerate(treatments):
+        # Filtriamo i dati per la combinazione corrente
+        subset = df[(df['Genotype'] == genotype) & (df['Treatment'] == treatment)]
+        
+        # Estraiamo le due proteine rimuovendo i valori nulli
+        data_nr1 = subset['NR1_N'].dropna()
+        data_nr2a = subset['NR2A_N'].dropna()
+        
+        # Plottiamo entrambi gli istogrammi nello stesso asse (axes[i, j])
+        axes[i, j].hist(data_nr1, bins=30, alpha=0.5, label='NR1_N', density=True, color='blue')
+        axes[i, j].hist(data_nr2a, bins=30, alpha=0.5, label='NR2A_N', density=True, color='orange')
+        
+        # Aggiungiamo titoli e legenda per ogni riquadro
+        axes[i, j].set_title(f"Gen: {genotype} | Tratt: {treatment}")
+        axes[i, j].legend()
+        
+        # Etichette solo per gli assi esterni per pulizia visiva
+        if i == 1: axes[i, j].set_xlabel('Livello di Espressione')
+        if j == 0: axes[i, j].set_ylabel('Densità')
+
+plt.tight_layout()
+plt.show()
